@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"testing"
+
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/btcutil/psbt"
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/okx/go-wallet-sdk/coins/bitcoin"
+	"github.com/moyunfan/go-wallet-sdk/coins/bitcoin"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 // https://mempool.space/testnet/tx/766d32e560fca19f22ee3cf526edd00c5fbfd2f9833b5ff51fb64d3564321833
@@ -21,7 +22,7 @@ func TestMergePsbt(t *testing.T) {
 	bp, err := psbt.NewFromRawBytes(bytes.NewReader([]byte(buyPsbt)), true)
 	assert.NoError(t, err)
 	sp.Inputs[1] = bp.Inputs[1]
-	for k, _ := range sp.Inputs {
+	for k := range sp.Inputs {
 		err = psbt.Finalize(sp, k)
 		assert.NoError(t, err)
 	}
@@ -93,7 +94,6 @@ func TestPsbt(t *testing.T) {
 	t.Log(buyerTx)
 	assert.Equal(t, "cHNidP8BAN0CAAAAApV3TG/w54SD9fdtU6W5j2cBOlpdj33WuIUbrckXp3w6AQAAAAD/////3Hae3avlOA0ThY1rsXFiaFygFIX3WBHy1cNXJe7cVKwBAAAAAP////8DZQAAAAAAAAAiUSDZM1dVZgQG1pEcxQ2hKvQFtwfyJx6IV+z8hSN6zbZwRxAnAAAAAAAAIlEg2TNXVWYEBtaRHMUNoSr0BbcH8iceiFfs/IUjes22cEeWmRoAAAAAACJRINkzV1VmBAbWkRzFDaEq9AW3B/InHohX7PyFI3rNtnBHAAAAAAABASulwRoAAAAAACJRINkzV1VmBAbWkRzFDaEq9AW3B/InHohX7PyFI3rNtnBHAQMEAQAAAAETQA+Y1MmQQtNh33YYoUrZ5l276lwWmwGUtLijAespxz17HQpf3XfA5BE5x9ZJ8o5o+x+KAP1Zkdmwo1KznWj88lcBFyAplEsuIf4iLmoDGOkWHBC0Cn7HA2v7Rl0gCiCXK31XngABAStlAAAAAAAAACJRINkzV1VmBAbWkRzFDaEq9AW3B/InHohX7PyFI3rNtnBHAQMEgwAAAAETQDKoyy/Y+zNQCSJ0td6teOCs/Wb+BShN1t8rXFxrG442NYpF4dkf0UJqXeBxCDS5iKTq6SDg3uDIvBP0+1v6zNoBFyAplEsuIf4iLmoDGOkWHBC0Cn7HA2v7Rl0gCiCXK31XngAAAAA=",
 		buyerTx)
-
 }
 
 func TestPsbtBatch(t *testing.T) {
@@ -177,7 +177,6 @@ func TestPsbtBatch(t *testing.T) {
 	assert.Equal(t, int64(355), fee)
 
 	assert.Equal(t, "cHNidP8BAP0xAQIAAAADEWuXS7KzY36zT0CLMHK21b5bQBWPcPdr/5e4jKPi9S8CAAAAAP/////7gkgBe6hECxPFWVKX7kytXTrvARzpi8VIfaTfPWjCewAAAAAA/////15K6RIKwouWHgniSDZ8pWwPRW5+iKw1RLBFhkMTFrxqAQAAAAD/////BCMCAAAAAAAAIlEgCnD9mLKL/PED+eKp4S66xdTCpLMvB2v9Hp+DB2NhAB7QBwAAAAAAACJRIApw/Ziyi/zxA/niqeEuusXUwqSzLwdr/R6fgwdjYQAe0AcAAAAAAAAiUSAKcP2Ysov88QP54qnhLrrF1MKksy8Ha/0en4MHY2EAHiqSFAAAAAAAIlEgCnD9mLKL/PED+eKp4S66xdTCpLMvB2v9Hp+DB2NhAB4AAAAAAAEBK4GdFAAAAAAAIlEgCnD9mLKL/PED+eKp4S66xdTCpLMvB2v9Hp+DB2NhAB4BAwQBAAAAARNA+JSJqU8WbcA+FnXWHzI/pGLFdpCjwe5E2qCXXFQtU1XhQ5pFm22uRZKK3q7FGpQMpPMUJ6R4ZlsY8VinQrSa+gEXICmUSy4h/iIuagMY6RYcELQKfscDa/tGXSAKIJcrfVeeAAEBK+gDAAAAAAAAIlEgCnD9mLKL/PED+eKp4S66xdTCpLMvB2v9Hp+DB2NhAB4BAwSDAAAAARNAVgPw5EzeHCe9cLrDBt2KGF1G+cmKXpo5bxyIhBjOWFg18nSQBzV1syhU20uNyY7KVy1bqCdT/vVOlZOQ6Cu3NAEXICmUSy4h/iIuagMY6RYcELQKfscDa/tGXSAKIJcrfVeeAAEBK+gDAAAAAAAAIlEgCnD9mLKL/PED+eKp4S66xdTCpLMvB2v9Hp+DB2NhAB4BAwSDAAAAARNApU2osI9D7LsV7pImSDoy+xD7xLVnAZxvuXDNUev8mAswTIGfej+wNDb7lXQtROoVuTHI1GPfBuAy6LvPv39PsAEXICmUSy4h/iIuagMY6RYcELQKfscDa/tGXSAKIJcrfVeeAAAAAAA=", buyerTx)
-
 }
 
 func TestMergePsbtBatch(t *testing.T) {
@@ -194,7 +193,7 @@ func TestMergePsbtBatch(t *testing.T) {
 	bp.Inputs[1] = sp.Inputs[1]
 	bp.Inputs[2] = sp2.Inputs[1]
 
-	for k, _ := range bp.Inputs {
+	for k := range bp.Inputs {
 		err = psbt.Finalize(bp, k)
 		assert.NoError(t, err)
 	}

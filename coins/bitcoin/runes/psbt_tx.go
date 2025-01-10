@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+
 	"github.com/btcsuite/btcd/btcec/v2/schnorr"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/btcutil/psbt"
@@ -11,7 +12,7 @@ import (
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/okx/go-wallet-sdk/coins/bitcoin"
+	"github.com/moyunfan/go-wallet-sdk/coins/bitcoin"
 )
 
 type TxInput struct {
@@ -87,8 +88,8 @@ func GenerateRunesSignedListingPSBTBase64(in *TxInput, out *TxOutput, network *c
 	}
 	witnessUtxo := wire.NewTxOut(in.Amount, prevPkScript)
 	prevOuts := map[wire.OutPoint]*wire.TxOut{
-		wire.OutPoint{Index: 0}: dummyWitnessUtxo,
-		*prevOut:                witnessUtxo,
+		{Index: 0}: dummyWitnessUtxo,
+		*prevOut:   witnessUtxo,
 	}
 	prevOutputFetcher := txscript.NewMultiPrevOutFetcher(prevOuts)
 
@@ -101,7 +102,7 @@ func GenerateRunesSignedListingPSBTBase64(in *TxInput, out *TxOutput, network *c
 }
 
 func GenerateRunesSignedBuyingTx(ins []*TxInput, outs []*TxOutput, dustSize, feePerB int64, sellerPsbt []string, network *chaincfg.Params) (int64, string, error) {
-	//首先包含找零,计算手续费是否足够.
+	// 首先包含找零,计算手续费是否足够.
 	totalinput, totaloutput, vsize, err := calFee(ins, outs, sellerPsbt, network)
 	if err != nil {
 		return 0, "", err
@@ -109,7 +110,6 @@ func GenerateRunesSignedBuyingTx(ins []*TxInput, outs []*TxOutput, dustSize, fee
 	fee := vsize * feePerB
 	if totalinput-totaloutput > fee && totalinput-totaloutput-fee >= dustSize {
 		outs[len(outs)-1].Amount = totalinput - totaloutput - fee
-
 	} else {
 		outs = outs[0 : len(outs)-1]
 		totalinput, totaloutput, vsize, err = calFee(ins, outs, sellerPsbt, network)
@@ -241,7 +241,7 @@ func generateBuyPsbt(ins []*TxInput, outs []*TxOutput, sellerPsbts []string, net
 			return "", err
 		}
 
-		//这里要注销掉.
+		// 这里要注销掉.
 		if finalize {
 			err = psbt.Finalize(bp, i)
 			if err != nil {

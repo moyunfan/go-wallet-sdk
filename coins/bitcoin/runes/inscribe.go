@@ -5,21 +5,21 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"math/big"
+	"sort"
+	"strings"
+
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/okx/go-wallet-sdk/coins/bitcoin"
-	"math/big"
-	"sort"
-	"strings"
+	"github.com/moyunfan/go-wallet-sdk/coins/bitcoin"
 )
 
-var (
-	ErrInvalidEdict = errors.New("ErrInvalidEdict")
-)
+var ErrInvalidEdict = errors.New("ErrInvalidEdict")
+
 var (
 	TAG_BODY         = big.NewInt(0)
 	TAG_Flags        = big.NewInt(2)
@@ -218,14 +218,13 @@ const (
 
 // todo
 func CheckOpReturnData(data *OpReturnData) bool {
-
 	return true
 }
 
 var (
 	zero = big.NewInt(0)
-	x7F  = big.NewInt(0x7F) //127
-	x80  = big.NewInt(0x80) //128
+	x7F  = big.NewInt(0x7F) // 127
+	x80  = big.NewInt(0x80) // 128
 )
 
 func EncodeToVecV2(n *big.Int, buf *bytes.Buffer) {
@@ -306,14 +305,14 @@ func BuildOpReturnData(edicts Edicts, isDefaultOutput, mint bool, defaultOutput 
 	if len(data) > 80 {
 		return nil, errors.New("The script is too long")
 	}
-	//fmt.Println(hex.EncodeToString(payload.Bytes()))
+	// fmt.Println(hex.EncodeToString(payload.Bytes()))
 	builder := txscript.NewScriptBuilder()
 	builder.AddOp(txscript.OP_RETURN).AddOp(txscript.OP_13).AddData(data)
 	return builder.Script()
 }
 
 func Int64ToBytes(i int64) []byte {
-	var buf = make([]byte, 8)
+	buf := make([]byte, 8)
 	binary.BigEndian.PutUint64(buf, uint64(i))
 	index := 0
 	for j := 0; j < 8; j++ {
@@ -329,7 +328,6 @@ func Int64ToBytes(i int64) []byte {
 }
 
 func BuildOpReturnScriptForEdict(edicts []*Edict, isMainnet bool) ([]byte, error) {
-
 	tagBody := new(big.Int).SetInt64(0)
 	payload := []int64{}
 
@@ -385,12 +383,12 @@ func BuildOpReturnScriptForEdict(edicts []*Edict, isMainnet bool) ([]byte, error
 	}
 	return inscriptionScript, nil
 
-	//return txscript.NullDataScript(buf.Bytes())
+	// return txscript.NullDataScript(buf.Bytes())
 }
 
 func BuildOpReturnScriptForRuneMainEdict(
-	edicts []*Edict, isMainnet bool, isDefaultOutput bool, defaultOutput int64) ([]byte, error) {
-
+	edicts []*Edict, isMainnet bool, isDefaultOutput bool, defaultOutput int64,
+) ([]byte, error) {
 	tagBody := new(big.Int).SetInt64(0)
 	tagDefaultOupt := new(big.Int).SetInt64(12)
 	payload := []int64{}
@@ -457,7 +455,7 @@ func BuildOpReturnScriptForRuneMainEdict(
 	}
 	return inscriptionScript, nil
 
-	//return txscript.NullDataScript(buf.Bytes())
+	// return txscript.NullDataScript(buf.Bytes())
 }
 
 func Sign(tx *wire.MsgTx, privateKeys []*btcec.PrivateKey, prevOutFetcher *txscript.MultiPrevOutFetcher) error {
