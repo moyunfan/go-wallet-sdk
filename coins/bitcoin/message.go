@@ -7,6 +7,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
+	"math/big"
+	"reflect"
+
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/btcsuite/btcd/btcec/v2/schnorr"
@@ -17,9 +21,6 @@ import (
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/okx/go-wallet-sdk/crypto"
-	"io"
-	"math/big"
-	"reflect"
 )
 
 const (
@@ -217,6 +218,7 @@ func ExtractTxFromSignedPSBTBIP322(psbtHex string) (string, error) {
 
 	return GetTxHexBIP322(tx)
 }
+
 func GetTxHexBIP322(tx *wire.MsgTx) (string, error) {
 	var buf bytes.Buffer
 	if err := BtcEncodeBip322(&buf, 0, wire.WitnessEncoding, tx); err != nil {
@@ -282,8 +284,10 @@ const scriptSlabSize = 1 << 22
 
 type scriptSlab [scriptSlabSize]byte
 
-var binarySerializer binaryFreeList = make(chan []byte, binaryFreeListMaxItems)
-var scriptPool = make(scriptFreeList, freeListMaxItems)
+var (
+	binarySerializer binaryFreeList = make(chan []byte, binaryFreeListMaxItems)
+	scriptPool                      = make(scriptFreeList, freeListMaxItems)
+)
 
 // ignored and allowed to go the garbage collector.
 func (c scriptFreeList) Borrow() *scriptSlab {
@@ -349,8 +353,8 @@ func BtcDecodeWitnessForBip0322(r io.Reader, pver uint32, enc wire.MessageEncodi
 }
 
 func readScriptBuf(r io.Reader, pver uint32, buf, s []byte,
-	maxAllowed uint32, fieldName string) ([]byte, error) {
-
+	maxAllowed uint32, fieldName string,
+) ([]byte, error) {
 	count, err := ReadVarIntBuf(r, pver, buf)
 	if err != nil {
 		return nil, err
@@ -534,10 +538,7 @@ func SignMessage(wif string, prefix, message string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	sig, err := ecdsa.SignCompact(w.PrivKey, messageHash, true)
-	if err != nil {
-		return "", err
-	}
+	sig := ecdsa.SignCompact(w.PrivKey, messageHash, true)
 	return base64.StdEncoding.EncodeToString(sig), nil
 }
 
@@ -757,7 +758,7 @@ func checkAddr(pub *btcec.PublicKey, addr string, network *chaincfg.Params) erro
 	if len(addr) == 0 {
 		return ErrNonSupportedAddrType
 	}
-	//zec address is different from other address types.
+	// zec address is different from other address types.
 	if network != nil && network.Net == zecNet {
 		if addr == NewZECAddr(pub.SerializeCompressed()) {
 			return nil
